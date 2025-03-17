@@ -7,7 +7,7 @@ CHESS_BOARD_DIM = (9, 9)
 n = 0  # image_counter
 
 # checking if  images dir is exist not, if not then create images directory
-image_dir_path = "images"
+image_dir_path = "./images"
 
 CHECK_DIR = os.path.isdir(image_dir_path)
 # if directory does not exist create

@@ -2,8 +2,8 @@ import json
 import os
 import xml.etree.ElementTree as ET
 
-caminho_arucos = os.path.expanduser('~/lognav_ws/src/freedom_vehicle/models/arucos/model.sdf')
-caminho_arucos_material = os.path.expanduser('~/lognav_ws/src/freedom_vehicle/models/arucos/materials/scripts/')
+caminho_arucos = os.path.expanduser('/home/lognav/lognav_ws/src/freedom_vehicle/models/models/arucos/model.sdf')
+caminho_arucos_material = os.path.expanduser('~/lognav_ws/src/freedom_vehicle/models/models/arucos/materials/scripts/')
 
 with open('arucos_infos.json', 'r') as json_file:
     input_json = json.load(json_file)

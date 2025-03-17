@@ -246,7 +246,7 @@ class ArUcoDetector(Node):
 
         T20 = t_mundo_aruco @ t_aruco_camera_inv 
         print('T20', T20)
-        print('ground_truth', [0.03, -1.5855, 0.93])
+        print('ground_truth', [0.4, -1.5855, 0.93])
         #sla = T_mundo_aruco_final @ t_final @ transform_matrix
         #print('sla', sla)
         #print('ground_truth', self.pos_odom)
