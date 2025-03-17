@@ -13,11 +13,11 @@ from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion, TransformSta
 from std_msgs.msg import Header
 import cv2.aruco as aruco
 import threading
-import keyboard
-
+from pynput import keyboard
+from std_msgs.msg import Float64, Int32
 
 # Caminho para o arquivo de calibração
-calib_data_path = "/home/lognav/lognav_ws/src/aruco_recognition/src/calib_data/MultiMatrix.npz"
+calib_data_path = "/home/freedom/freedom_ws/src/aruco_recognition/src/calib_data/MultiMatrix.npz"
 
 # Carregar dados de calibração
 calib_data = np.load(calib_data_path)
@@ -38,16 +38,17 @@ class ArUcoDetector(Node):
         # Publicadores para imagem processada e pose
         self.image_publisher = self.create_publisher(Image, '/aruco_detector/output_image', 10)
         self.publisher_stamp = self.create_publisher(PoseStamped, 'pose_stamped_topic', 10)
+        self.distance_publisher = self.create_publisher(Float64, '/aruco_detector/distance', 10)
+        self.id_publisher = self.create_publisher(Int32, '/aruco_detector/id', 10)
 
         qos = QoSProfile(depth=10)
-        self.pub = self.create_publisher(Twist, 'cmd_vel', qos)
+        self.pub = self.create_publisher(Twist, '/hoverboard_base_controller/cmd_vel_unstamped', qos)
 
         # Inicializa o objeto cv_bridge
         self.bridge = CvBridge()
 
         # Dicionário de tamanhos de ArUco e distâncias por ID
-        self.distIDs = {0: 8, 1: 5}  # Exemplo simplificado
-        print('Dist IDs:', self.distIDs)
+        self.distIDs = {4: 5, 5: 5, 6: 5, 7: 5, 8: 5}  # Todos os IDs têm tamanho 5        print('Dist IDs:', self.distIDs)
 
         # Buffer e listener de transformação
         self.tf_buffer = tf2_ros.Buffer()
@@ -73,7 +74,7 @@ class ArUcoDetector(Node):
             "DICT_7X7_1000": aruco.DICT_7X7_1000,
             "DICT_ARUCO_ORIGINAL": aruco.DICT_ARUCO_ORIGINAL
         }
-        aruco_type = "DICT_4X4_1000"
+        aruco_type = "DICT_4X4_100"
         self.aruco_dict = aruco.Dictionary_get(arucoDicts[aruco_type])
         self.parameters = aruco.DetectorParameters_create()
 
@@ -105,6 +106,9 @@ class ArUcoDetector(Node):
         if marker_corners:
             for i in range(len(marker_corners)):
                 aruco_id = ids[i][0]
+                msg2 = Int32()
+                msg2.data = int(aruco_id)
+                self.id_publisher.publish(msg2)
                 marker_corner = marker_corners[i]
                 if aruco_id in self.distIDs:
                     marker_size = self.distIDs[aruco_id]
@@ -115,15 +119,12 @@ class ArUcoDetector(Node):
                     # Publica a imagem com os ArUcos detectados
                     output_msg = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
                     self.image_publisher.publish(output_msg)
-                        
-                    if aruco_id == 1 and not self.paused:
-                        self.pause_movement()
+
 
                     # Verifica se o ArUco foi detectado pela primeira vez
-                    if aruco_id == 1 and self.first_detection:
-                        self.first_detection = False
-                        self.get_logger().info("First detection of ArUco ID 1. Entering pause mode.")
-                        self.pause_movement()
+                    #while aruco_id == 4 and self.first_detection:
+                     #   print("aruco", aruco_id)
+                      #  self.pause_movement()
         try:
             cv2.imshow("ArUco Detection", cv2.resize(cv_image, (500, 400), interpolation=cv2.INTER_AREA))
             cv2.waitKey(3)
@@ -134,6 +135,9 @@ class ArUcoDetector(Node):
         _, tVec, _ = aruco.estimatePoseSingleMarkers(marker_corner, marker_size, cam_mat, dist_coef)
 
         distance = np.sqrt(tVec[0][0][2] ** 2 + tVec[0][0][0] ** 2 + tVec[0][0][1] ** 2)
+        msg = Float64()
+        msg.data = float(distance)
+        self.distance_publisher.publish(msg)
 
         aruco_pos_cam = Point()
         aruco_pos_cam.x, aruco_pos_cam.y, aruco_pos_cam.z = tVec[0][0][0], tVec[0][0][1], tVec[0][0][2]
@@ -159,23 +163,34 @@ class ArUcoDetector(Node):
     def pause_movement(self):
         print('Stopped')
         twist = Twist()
-        self.previous_twist = twist 
+        twist.linear.x = 0.0
+        twist.linear.y = 0.0
+        twist.linear.z = 0.0
+        twist.angular.x = 0.0
+        twist.angular.y = 0.0
+        twist.angular.z = 0.0
         self.pub.publish(twist)
         self.paused = True
 
     def resume_movement(self):
-        self.pub.publish(self.previous_twist)
+        print("resumed")
+        twist = Twist()
+        twist.linear.x = 0.15
+        self.pub.publish(twist)
+        self.first_detection = False
         self.paused = False
 
     def detect_key(self):
-        while rclpy.ok():
-            if keyboard.is_pressed(' '): 
+        def on_press(key):
+            if key == keyboard.Key.space:
                 with self.lock:
                     if self.paused:
                         self.resume_movement()
                     else:
                         self.pause_movement()
-
+    
+        listener = keyboard.Listener(on_press=on_press)
+        listener.start()
 def main(args=None):
     rclpy.init(args=args)
     aruco_detector = ArUcoDetector()
