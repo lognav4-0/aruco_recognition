@@ -10,6 +10,7 @@ import sys
 import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped, Point, Twist
+from std_msgs.msg import Int32
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Header
 import math
@@ -44,6 +45,8 @@ class ArUcoDetector(Node):
 
         self.create_subscription(CameraInfo, '/freedom_vehicle/camera/camera_info', self.camera_info_callback, 10)
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+
+        self.id_publisher = self.create_publisher(Int32, '/aruco_detector/id', 10)
 
         qos = QoSProfile(depth=10)
         self.pub = self.create_publisher(Twist, 'cmd_vel', qos)
@@ -202,6 +205,10 @@ class ArUcoDetector(Node):
  
         t_mundo_aruco = self.create_transform_matrix_3d(0, 0, self.yaw, self.pos.x, self.pos.y, self.pos.z)
 
+        msg2 = Int32()
+        msg2.data = int(aruco_id)
+        self.id_publisher.publish(msg2)
+
         try:
             transform = self.tf_buffer.lookup_transform('base_link', 'camera_link', rclpy.time.Time(), timeout=rclpy.time.Duration(seconds=1))
             translation = np.array([transform.transform.translation.x,
@@ -231,7 +238,6 @@ class ArUcoDetector(Node):
         #Posição do ArUco no mundo
         O0_0 = np.array([[0, 0, 0, 1]]).T       
         O1_0 = t_mundo_aruco @ O0_0
-        print('O1_0', O1_0)
 
         #O2_2 = np.array([[0, 0, 0, 1]]).T
         #O1_2 = transform_matrix @ O2_2
@@ -239,14 +245,10 @@ class ArUcoDetector(Node):
         #Posição do Aruco para a câmera
         O2_2 = np.array([[0, 0, 0, 1]]).T
         O1_2 = t_aruco_camera @ O2_2
-        print('O1_2', O1_2)
 
         t_aruco_camera_inv = np.linalg.inv(t_aruco_camera)
-        print('t_aruco_camera_inv', t_aruco_camera_inv, t_aruco_camera)
 
         T20 = t_mundo_aruco @ t_aruco_camera_inv 
-        print('T20', T20)
-        print('ground_truth', [0.4, -1.5855, 0.93])
         #sla = T_mundo_aruco_final @ t_final @ transform_matrix
         #print('sla', sla)
         #print('ground_truth', self.pos_odom)
@@ -287,7 +289,6 @@ class ArUcoDetector(Node):
         return cv_image
 
     def camera_info_callback(self, msg : CameraInfo):
-        print('camera_info_callback')
         # Atualiza a matriz de calibração da câmera
         self.camera_matrix = np.array(msg.k).reshape((3, 3))
         self.dist_coef = np.array(msg.d)
