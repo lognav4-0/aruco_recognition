@@ -38,11 +38,10 @@ class ArUcoDetector(Node):
         self.create_subscription(Image, '/camera1/image_raw', self.image_callback, 10) # Alterado o tópico do subscriber
         self.create_subscription(CameraInfo, '/camera1/camera_info', self.camera_info_callback, 10) # Alterado o tópico do subscriber
 
-        
         # Configura o publicador para publicar a imagem com os ArUcos detectados
         self.image_publisher = self.create_publisher(Image, '/aruco_detector/output_image', 10)
 
-        self.publisher_stamp = self.create_publisher(PoseStamped, 'pose_stamped_topic', 10)
+        self.publisher_stamp = self.create_publisher(PoseStamped, '/pose_stamped_topic', 10)
         
         # Inicializa o objeto cv_bridge
         self.bridge = CvBridge()
@@ -52,30 +51,19 @@ class ArUcoDetector(Node):
         #Cria o dicionario com as distancias p/ID
         self.distIDs = {}
 
-        # Teste
-# ----------------------------------------------------------------------------------------------------------------------
-        self.distIDs[0] = 0.08  # Ex: ArUco ID 0 tem 0.08 metros (8 cm) de lado
-        self.distIDs[1] = 0.05  # Ex: ArUco ID 1 tem 0.05 metros (5 cm) de lado
-        self.distIDs[2] = 0.05  # Ex: ArUco ID 2 tem 0.05 metros (5 cm) de lado
-        self.distIDs[3] = 0.10  # Ex: ArUco ID 5 tem 0.10 metros (10 cm) de lado
-        self.distIDs[10] = 0.10 # Ex: ArUco ID 10 tem 0.10 metros (10 cm) de lado
-        # self.get_logger().info(f"Dicionário de tamanhos de ArUco (distIDs) inicializado: {self.distIDs}")
-# ----------------------------------------------------------------------------------------------------------------------
-
         # Código original
 # ----------------------------------------------------------------------------------------------------------------------
-        # self.valor_ate_50 = 8
-        # for i in range(0, 1):
-        #     self.distIDs[i] = self.valor_ate_50
+        self.valor_ate_50 = 3.2 #cm
+        for i in range(0, 4): # (de 0, até n - 1)
+            self.distIDs[i] = self.valor_ate_50
 
-        # # Definir outro valor igual para as chaves de 51 a 100
+        # Definir outro valor igual para as chaves de 51 a 100
         # self.valor_ate_100 = 5
         # for i in range(1, 2):
         #     self.distIDs[i] = self.valor_ate_100
-
-
-        # print('asdas', self.distIDs)
 # ----------------------------------------------------------------------------------------------------------------------
+
+        print('asdas', self.distIDs)
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
@@ -186,7 +174,6 @@ class ArUcoDetector(Node):
         )
 
         return cv_image
-
 
     def camera_info_callback(self, msg : CameraInfo):
         # Atualiza a matriz de calibração da câmera
