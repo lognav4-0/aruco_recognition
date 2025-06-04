@@ -35,8 +35,8 @@ class ArUcoDetector(Node):
         super().__init__('aruco_detector')
         
         # receber as imagens da câmera
-        self.create_subscription(Image, '/camera_test', self.image_callback, 10)
-        self.create_subscription(CameraInfo, '/camera_test_info', self.camera_info_callback, 10)
+        self.create_subscription(Image, '/camera1/image_raw', self.image_callback, 10)
+        self.create_subscription(CameraInfo, '/camera1/camera_info', self.camera_info_callback, 10)
 
         
         # Configura o publicador para publicar a imagem com os ArUcos detectados
@@ -84,7 +84,7 @@ class ArUcoDetector(Node):
             "DICT_7X7_1000": cv2.aruco.DICT_7X7_1000,
             "DICT_ARUCO_ORIGINAL": cv2.aruco.DICT_ARUCO_ORIGINAL
             }
-        aruco_type = "DICT_4X4_1000"
+        aruco_type = "DICT_5X5_1000"
         self.aruco_dict = cv2.aruco.Dictionary_get(arucoDicts[aruco_type])
         self.parameters = aruco.DetectorParameters_create()
 
