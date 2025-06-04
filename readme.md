@@ -14,12 +14,13 @@ Primeiramente deverá ser instalado o pacote Freedom_vehicle, onde temos a simul
 https://github.com/lognav4-0/freedom_vehicle
 ```
 
-Após ter o ambiente simulado devidamente instalado e o .bash devidamente atualizado, deverá clonar o pacote aruco_recognition:
+Após ter o ambiente simulado devidamente instalado e o .bash devidamente atualizado, deverá clonar os pacotes usb_cam e aruco_recognition:
 
 ```
+git clone https://github.com/lognav4-0/usb_cam
 git clone https://github.com/lognav4-0/aruco_recognition.git
 ```
-
+OBS: Para uma instalação completa do pacote usb_cam, siga as instruções presentes no repositório.
 
 ## ⚙️ Adicionando Arucos no mundo Simulado.
 
@@ -67,9 +68,10 @@ Para o reconhecimento dos arucos no ambiente simulado, deve-se rodar o seguinte 
 ros2 run aruco_recognition aruco-recog.py
 ```
 
-Para o reconhecimento dos arucos no ambiente real, deve-se rodar o seguinte código:
+Para o reconhecimento dos arucos no ambiente real, deve-se rodar os seguintes códigos:
 
 ```
+ros2 launch usb_cam camera.launch.py
 ros2 run aruco_recognition aruco-recog-camera.py
 ```
 
