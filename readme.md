@@ -69,9 +69,12 @@ ros2 run aruco_recognition aruco-recog.py
 ```
 
 Para o reconhecimento dos arucos no ambiente real, deve-se rodar os seguintes códigos:
-
+- Em um terminal, rodar:
 ```
 ros2 launch usb_cam camera.launch.py
+```
+- Em outro terminal, rodar:
+```
 ros2 run aruco_recognition aruco-recog-camera.py
 ```
 
