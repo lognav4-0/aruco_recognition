@@ -11,13 +11,14 @@ import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion, TransformStamped
 from std_msgs.msg import Header
-#from pose_msgs.msg import poseDictionaryMsg
+# from pose_msgs.msg import poseDictionaryMsg
 
 # Importa a biblioteca ArUco
-import cv2.aruco as aruco
+import cv2.aruco as aruco # type: ignore
 import time
 
-calib_data_path = "./calib_data/MultiMatrix.npz"
+# calib_data_path = "./calib_data/MultiMatrix.npz"
+calib_data_path = "/home/gabs/lognav_ws/src/aruco_recognition/src/calib_data/MultiMatrix.npz" # Teste
 
 calib_data = np.load(calib_data_path)
 print(calib_data.files)
@@ -29,14 +30,13 @@ t_vectors = calib_data["tVector"]
 
 # Define o ID dos ArUcos a serem detectados
 
-
 class ArUcoDetector(Node):
     def __init__(self):
         super().__init__('aruco_detector')
         
         # receber as imagens da câmera
-        self.create_subscription(Image, '/camera1/image_raw', self.image_callback, 10)
-        self.create_subscription(CameraInfo, '/camera1/camera_info', self.camera_info_callback, 10)
+        self.create_subscription(Image, '/camera1/image_raw', self.image_callback, 10) # Alterado o tópico do subscriber
+        self.create_subscription(CameraInfo, '/camera1/camera_info', self.camera_info_callback, 10) # Alterado o tópico do subscriber
 
         
         # Configura o publicador para publicar a imagem com os ArUcos detectados
@@ -51,17 +51,31 @@ class ArUcoDetector(Node):
         self.aruco_sizes = {}
         #Cria o dicionario com as distancias p/ID
         self.distIDs = {}
-        self.valor_ate_50 = 8
-        for i in range(0, 1):
-            self.distIDs[i] = self.valor_ate_50
 
-        # Definir outro valor igual para as chaves de 51 a 100
-        self.valor_ate_100 = 5
-        for i in range(1, 2):
-            self.distIDs[i] = self.valor_ate_100
+        # Teste
+# ----------------------------------------------------------------------------------------------------------------------
+        self.distIDs[0] = 0.08  # Ex: ArUco ID 0 tem 0.08 metros (8 cm) de lado
+        self.distIDs[1] = 0.05  # Ex: ArUco ID 1 tem 0.05 metros (5 cm) de lado
+        self.distIDs[2] = 0.05  # Ex: ArUco ID 2 tem 0.05 metros (5 cm) de lado
+        self.distIDs[3] = 0.10  # Ex: ArUco ID 5 tem 0.10 metros (10 cm) de lado
+        self.distIDs[10] = 0.10 # Ex: ArUco ID 10 tem 0.10 metros (10 cm) de lado
+        # self.get_logger().info(f"Dicionário de tamanhos de ArUco (distIDs) inicializado: {self.distIDs}")
+# ----------------------------------------------------------------------------------------------------------------------
+
+        # Código original
+# ----------------------------------------------------------------------------------------------------------------------
+        # self.valor_ate_50 = 8
+        # for i in range(0, 1):
+        #     self.distIDs[i] = self.valor_ate_50
+
+        # # Definir outro valor igual para as chaves de 51 a 100
+        # self.valor_ate_100 = 5
+        # for i in range(1, 2):
+        #     self.distIDs[i] = self.valor_ate_100
 
 
-        print('asdas', self.distIDs)
+        # print('asdas', self.distIDs)
+# ----------------------------------------------------------------------------------------------------------------------
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
@@ -84,7 +98,7 @@ class ArUcoDetector(Node):
             "DICT_7X7_1000": cv2.aruco.DICT_7X7_1000,
             "DICT_ARUCO_ORIGINAL": cv2.aruco.DICT_ARUCO_ORIGINAL
             }
-        aruco_type = "DICT_5X5_1000"
+        aruco_type = "DICT_5X5_1000" # Alterado o dicionário
         self.aruco_dict = cv2.aruco.Dictionary_get(arucoDicts[aruco_type])
         self.parameters = aruco.DetectorParameters_create()
 
