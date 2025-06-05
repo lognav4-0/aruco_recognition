@@ -37,6 +37,13 @@ install(PROGRAMS src/aruco-recog.py
 install(PROGRAMS src/aruco-recog-camera.py
   DESTINATION lib/${PROJECT_NAME})
 
+# ----------------------------------------------------------------------------------------------------------------------
+install(DIRECTORY
+  calib_data
+  DESTINATION share/${PROJECT_NAME} 
+  )
+# ----------------------------------------------------------------------------------------------------------------------
+
   set(ARUCO_RECOGNITION_SCRIPTS_DIR ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME})
   ament_environment_hooks(
     "${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/30.${PROJECT_NAME}_env_hook.sh"

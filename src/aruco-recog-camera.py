@@ -12,14 +12,20 @@ import tf2_geometry_msgs
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion, TransformStamped
 from std_msgs.msg import Header
 # from pose_msgs.msg import poseDictionaryMsg
+import os
+from ament_index_python.packages import get_package_share_directory
 
 # Importa a biblioteca ArUco
 import cv2.aruco as aruco # type: ignore
 import time
 
-# calib_data_path = "./calib_data/MultiMatrix.npz"
-calib_data_path = "/home/gabs/lognav_ws/src/aruco_recognition/src/calib_data/MultiMatrix.npz" # Teste
+# ----------------------------------------------------------------------------------------------------------------------
+package_name = 'aruco_recognition'
+share_dir = get_package_share_directory(package_name)
+calib_data_path = os.path.join(share_dir, 'calib_data', 'MultiMatrix.npz')
+# ----------------------------------------------------------------------------------------------------------------------
 
+# calib_data_path = "./calib_data/MultiMatrix.npz"
 calib_data = np.load(calib_data_path)
 print(calib_data.files)
 
@@ -51,14 +57,13 @@ class ArUcoDetector(Node):
         #Cria o dicionario com as distancias p/ID
         self.distIDs = {}
 
-        # Código original
 # ----------------------------------------------------------------------------------------------------------------------
         self.valor_ate_50 = 3.2 #cm
         for i in range(0, 4): # (de 0, até n - 1)
             self.distIDs[i] = self.valor_ate_50
 
         # Definir outro valor igual para as chaves de 51 a 100
-        # self.valor_ate_100 = 5
+        # self.valor_ate_100 = 3.2 # cm
         # for i in range(1, 2):
         #     self.distIDs[i] = self.valor_ate_100
 # ----------------------------------------------------------------------------------------------------------------------
